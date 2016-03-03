@@ -1,0 +1,11 @@
+name: carl-notebooks
+
+dependencies:
+  - python=3.5
+  - numpy
+  - scipy
+  - matplotlib
+  - pandas
+  - pip:
+    - git+https://github.com/scikit-learn/scikit-learn.git#egg=sklearn[complete]
+    - git+git://github.com/Theano/Theano.git
