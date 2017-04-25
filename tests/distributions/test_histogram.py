@@ -82,3 +82,13 @@ def test_histogram_normalization():
         volume = ((h.edges_[0][2:-1] -
                    h.edges_[0][1:-2]) * h.histogram_[1:-1]).sum()
         assert_almost_equal(volume, 1.0)
+
+
+def test_histogram_std():
+    rng = check_random_state(1)
+    X = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.9]).reshape(-1, 1)
+    h = Histogram(bins=5, range=[(0, 1)])
+    h.fit(X)
+    p, std = h.pdf(X, return_std=True)
+    assert std[0] == 5 ** 0.5 / 6
+    assert std[-1] == 1 ** 0.5 / 6

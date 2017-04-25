@@ -58,7 +58,12 @@ class Histogram(DistributionMixin):
             indices[X[:, j] == self.edges_[j][-2]] -= 1
             all_indices.append(indices)
 
-        return self.histogram_[all_indices]
+        p = self.histogram_[all_indices]
+
+        if return_std:
+            return p, self.errors_[all_indices]
+        else:
+            return p
 
     def nll(self, X, **kwargs):
         return -np.log(self.pdf(X, **kwargs))
@@ -101,8 +106,8 @@ class Histogram(DistributionMixin):
             range_ = self.range[0] if self.range else None
             h, e = np.histogram(X.ravel(), bins=bins, range=range_,
                                 weights=sample_weight, normed=False)
-            widths = e[1:] - e[:-1]
-            h = h / widths / h.sum()
+            volumes = e[1:] - e[:-1]
+            counts = h
             e = [e]
 
         elif self.variable_width:
@@ -113,19 +118,30 @@ class Histogram(DistributionMixin):
             h, e = np.histogram(X.ravel(), bins=ticks, range=range_,
                                 normed=False, weights=sample_weight)
             h, e = h.astype(float), e.astype(float)
-            widths = e[1:] - e[:-1]
-            h = h / widths / h.sum()
+            volumes = e[1:] - e[:-1]
+            counts = h
             e = [e]
 
         else:
             bins = self.bins
             h, e = np.histogramdd(X, bins=bins, range=self.range,
-                                  weights=sample_weight, normed=True)
+                                  weights=sample_weight, normed=False)
+            volumes = np.ones_like(h)
+            for e_i in np.meshgrid(*[e_i[1:] - e_i[:-1] for e_i in e],
+                                   indexing="ij"):
+                volumes *= e_i
+            counts = h
+
+        # Histogram and bin uncertainties
+        h = counts / counts.sum() / volumes
+        errors = np.sqrt(counts) / counts.sum()  # Poisson errors
 
         # Add empty bins for out of bound samples
         for j in range(X.shape[1]):
             h = np.insert(h, 0, 0., axis=j)
             h = np.insert(h, h.shape[j], 0., axis=j)
+            errors = np.insert(errors, 0, 0., axis=j)
+            errors = np.insert(errors, errors.shape[j], 0., axis=j)
             e[j] = np.insert(e[j], 0, -np.inf)
             e[j] = np.insert(e[j], len(e[j]), np.inf)
 
@@ -141,6 +157,8 @@ class Histogram(DistributionMixin):
 
         self.histogram_ = h
         self.edges_ = e
+        self.counts_ = counts
+        self.errors_ = errors
         self.ndim_ = X.shape[1]
         return self
 
