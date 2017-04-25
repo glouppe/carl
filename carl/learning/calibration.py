@@ -379,7 +379,7 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
             std_num = std1
             std_den = (std0 ** 2 + std1 ** 2) ** 0.5
             std_p = (p ** 2 * ((std_num / num) ** 2 +
-                               (std_den / den) ** 2)) ** 0.5
+                               (std_den / den) ** 2)) ** 0.5  # xxx subtract covariance!!
             std_p[den == 0] = 0  # not sure what is best?
 
             return p, std_p
