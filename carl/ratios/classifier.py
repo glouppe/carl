@@ -132,7 +132,7 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
 
         return self
 
-    def predict(self, X, log=False, return_std=False, **kwargs):
+    def predict(self, X, return_std=False, log=False, **kwargs):
         """Predict the density ratio `r(x_i)` for all `x_i` in `X`.
 
         Parameters

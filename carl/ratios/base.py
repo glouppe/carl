@@ -55,7 +55,7 @@ class DensityRatioMixin:
         """
         return self
 
-    def predict(self, X, log=False, **kwargs):
+    def predict(self, X, return_std=False, log=False, **kwargs):
         """Predict the density ratio `r(x_i)` for all `x_i` in `X`.
 
         Parameters
@@ -73,7 +73,7 @@ class DensityRatioMixin:
         """
         raise NotImplementedError
 
-    def nllr(self, X, **kwargs):
+    def nllr(self, X, return_std=False, **kwargs):
         """Negative log-likelihood ratio.
 
         This method is a shortcut for `-ratio.predict(X, log=True).sum()`.
@@ -88,13 +88,20 @@ class DensityRatioMixin:
         * `nllr` [float]:
             The negative log-likelihood ratio.
         """
-        ratios = self.predict(X, log=True, **kwargs)
+        if not return_std:
+            ratios = self.predict(X, log=True, **kwargs)
+        else:
+            ratios, std = self.predict(X, log=True, return_std=True, **kwargs)
+
         mask = np.isfinite(ratios)
 
         if mask.sum() < len(ratios):
             warnings.warn("r(X) contains non-finite values.")
 
-        return -np.sum(ratios[mask])
+        if not return_std:
+            return -np.sum(ratios[mask])
+        else:
+            return -np.sum(ratios[mask]), (std ** 2).sum() ** 0.5
 
     def score(self, X, y, finite_only=True, **kwargs):
         """Negative MSE between predicted and known ratios.

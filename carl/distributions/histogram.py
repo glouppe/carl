@@ -65,8 +65,17 @@ class Histogram(DistributionMixin):
         else:
             return p
 
-    def nll(self, X, **kwargs):
-        return -np.log(self.pdf(X, **kwargs))
+    def nll(self, X, return_std=False, **kwargs):
+        if not return_std:
+            p = self.pdf(X, **kwargs)
+        else:
+            p, std = self.pdf(X, return_std=True, **kwargs)
+
+        if not return_std:
+            return -np.log(p)
+        else:
+            return -np.log(p), std / p
+
 
     def rvs(self, n_samples, random_state=None, **kwargs):
         rng = check_random_state(random_state)

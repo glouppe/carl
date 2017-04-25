@@ -60,16 +60,23 @@ def as_classifier(regressor):
                             self.classes_[1],
                             self.classes_[0])
 
-        def predict_proba(self, X):
+        def predict_proba(self, X, return_std=False):
             X = check_array(X)
 
-            df = self.regressor_.predict(X)
+            if not return_std:
+                df = self.regressor_.predict(X)
+            else:
+                df, std = self.regressor_.predict(X, return_std=True)
+
             df = np.clip(df, 0., 1.)
             probas = np.zeros((len(X), 2))
             probas[:, 0] = 1. - df
             probas[:, 1] = df
 
-            return probas
+            if not return_std:
+                return probas
+            else:
+                return probas, std
 
         def score(self, X, y):
             return self.regressor_.score(X, y)
