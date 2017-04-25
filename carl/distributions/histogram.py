@@ -41,7 +41,7 @@ class Histogram(DistributionMixin):
         self.interpolation = interpolation
         self.variable_width = variable_width
 
-    def pdf(self, X, **kwargs):
+    def pdf(self, X, return_std=False, **kwargs):
         X = check_array(X)
 
         if self.ndim_ == 1 and self.interpolation:
@@ -88,7 +88,11 @@ class Histogram(DistributionMixin):
     def fit(self, X, sample_weight=None, **kwargs):
         # Checks
         X = check_array(X)
+
         if sample_weight is not None and len(sample_weight) != len(X):
+            raise ValueError
+        if (self.bins == "blocks" or
+                self.variable_width) and (X.shape[1] != 1):
             raise ValueError
 
         # Compute histogram and edges
