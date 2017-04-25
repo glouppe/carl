@@ -6,9 +6,9 @@ import numpy as np
 
 from astropy.stats import bayesian_blocks
 from itertools import product
+from scipy.interpolate import interp1d
 from sklearn.utils import check_random_state
 from sklearn.utils import check_array
-from scipy.interpolate import interp1d
 
 from .base import DistributionMixin
 
@@ -97,6 +97,8 @@ class Histogram(DistributionMixin):
             range_ = self.range[0] if self.range else None
             h, e = np.histogram(X.ravel(), bins=bins, range=range_,
                                 weights=sample_weight, normed=False)
+            widths = e[1:] - e[:-1]
+            h = h / widths / h.sum()
             e = [e]
 
         elif self.variable_width:

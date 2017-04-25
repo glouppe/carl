@@ -7,6 +7,7 @@ import numpy as np
 from numpy.testing import assert_raises
 from numpy.testing import assert_array_almost_equal
 from numpy.testing import assert_almost_equal
+from sklearn.utils import check_random_state
 
 from carl.distributions import Histogram
 
@@ -66,3 +67,18 @@ def test_histogram_variable_width():
     integral = h.histogram_ * (h.edges_[0][1:] - h.edges_[0][:-1])
     integral = integral[1:-1].sum()
     assert_almost_equal(integral, 1.)
+
+
+def test_histogram_normalization():
+    rng = check_random_state(1)
+    X = rng.rand(100, 1)
+
+    for h in [Histogram(bins=10),
+              Histogram(bins=10, variable_width=True),
+              Histogram(bins="blocks")]:
+        h = Histogram(bins=10)
+        h.fit(X)
+
+        volume = ((h.edges_[0][2:-1] -
+                   h.edges_[0][1:-2]) * h.histogram_[1:-1]).sum()
+        assert_almost_equal(volume, 1.0)
