@@ -205,7 +205,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
                         self.classes_[1],
                         self.classes_[0])
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, return_std=False):
         """Predict the posterior probabilities of classification for `X`.
 
         Parameters
@@ -324,7 +324,7 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
 
         return self
 
-    def predict(self, T):
+    def predict(self, T, return_std=False):
         """Calibrate data.
 
         Parameters
@@ -332,19 +332,42 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
         * `T` [array-like, shape=(n_samples,)]:
             Data to calibrate.
 
+        * `return_std` [boolean]
+            If True, return the error associated with
+            `p(T|y=1)/(p(T|y=0)+p(T|y=1))`.
+
         Returns
         -------
         * `Tt` [array, shape=(n_samples,)]:
             Calibrated data.
         """
         T = column_or_1d(T).reshape(-1, 1)
-        num = self.calibrator1.pdf(T)
-        den = self.calibrator0.pdf(T) + self.calibrator1.pdf(T)
 
-        p = num / den
-        p[den == 0] = 0.5
+        if not return_std:
+            num = self.calibrator1.pdf(T)
+            den = self.calibrator0.pdf(T) + self.calibrator1.pdf(T)
 
-        return p
+            p = num / den
+            p[den == 0] = 0.5
+
+            return p
+
+        else:
+            p1, std1 = self.calibrator1.pdf(T, return_std=True)
+            p0, std0 = self.calibrator0.pdf(T, return_std=True)
+
+            num = p1
+            den = p0 + p1
+            p = num / den
+            p[den == 0] = 0.5
+
+            std_num = std1
+            std_den = (std0 ** 2 + std1 ** 2) ** 0.5
+            std_p = (num / den * ((std_num / num) ** 2 +
+                                  (std_den / den) ** 2)) ** 0.5
+            std_p[den == 0] = 0  # not sure what is best?
+
+            return p, std_p
 
 
 class KernelDensityCalibrator(BaseEstimator, RegressorMixin):

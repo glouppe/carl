@@ -85,7 +85,6 @@ def test_histogram_normalization():
 
 
 def test_histogram_std():
-    rng = check_random_state(1)
     X = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.9]).reshape(-1, 1)
     h = Histogram(bins=5, range=[(0, 1)])
     h.fit(X)

@@ -106,8 +106,8 @@ class Histogram(DistributionMixin):
             range_ = self.range[0] if self.range else None
             h, e = np.histogram(X.ravel(), bins=bins, range=range_,
                                 weights=sample_weight, normed=False)
-            volumes = e[1:] - e[:-1]
             counts = h
+            volumes = e[1:] - e[:-1]
             e = [e]
 
         elif self.variable_width:
@@ -118,19 +118,19 @@ class Histogram(DistributionMixin):
             h, e = np.histogram(X.ravel(), bins=ticks, range=range_,
                                 normed=False, weights=sample_weight)
             h, e = h.astype(float), e.astype(float)
-            volumes = e[1:] - e[:-1]
             counts = h
+            volumes = e[1:] - e[:-1]
             e = [e]
 
         else:
             bins = self.bins
             h, e = np.histogramdd(X, bins=bins, range=self.range,
                                   weights=sample_weight, normed=False)
+            counts = h
             volumes = np.ones_like(h)
             for e_i in np.meshgrid(*[e_i[1:] - e_i[:-1] for e_i in e],
                                    indexing="ij"):
                 volumes *= e_i
-            counts = h
 
         # Histogram and bin uncertainties
         h = counts / counts.sum() / volumes
