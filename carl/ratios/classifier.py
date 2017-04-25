@@ -174,7 +174,8 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
 
                 r = np.divide(p[:, 0], p[:, 1])
                 s = (r ** 2 * ((std / p[:, 0]) ** 2 +
-                               (std / p[:, 1]) ** 2)) ** 0.5   # XXX take correlation into account
+                               (std / p[:, 1]) ** 2 -
+                               2 * std ** 2 / (p[:, 0] * p[:, 1]))) ** 0.5
 
                 if not log:
                     return r, s
