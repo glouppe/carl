@@ -173,8 +173,8 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
                 p, std = self.classifier_.predict_proba(X, return_std=True)
 
                 r = np.divide(p[:, 0], p[:, 1])
-                s = (r ** 2 * ((s / p[:, 0]) ** 2 +
-                               (s / p[:, 1]) ** 2)) ** 0.5
+                s = (r ** 2 * ((std / p[:, 0]) ** 2 +
+                               (std / p[:, 1]) ** 2)) ** 0.5   # XXX take correlation into account
 
                 if not log:
                     return r, s
