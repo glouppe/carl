@@ -91,3 +91,11 @@ def test_histogram_std():
     p, std = h.pdf(X, return_std=True)
     assert std[0] == 5 ** 0.5 / 6
     assert std[-1] == 1 ** 0.5 / 6
+
+    nll, std_nll = h.nll(X, return_std=True)
+    assert std_nll[0] == std[0] / p[0]
+    assert std_nll[-1] == std[-1] / p[-1]
+
+    X = np.array([[0.5]])
+    p, std = h.pdf(X, return_std=True)
+    assert std[0] == 0.0

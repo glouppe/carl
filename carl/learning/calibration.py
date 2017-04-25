@@ -218,8 +218,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
         * `probas` [array, shape=(n_samples, n_classes)]:
             The predicted probabilities.
         """
-        if return_std and (self.method != "histogram" or
-                           not isinstance(self.method, HistogramCalibrator)):
+        if return_std and self.method != "histogram":
             raise ValueError
 
         p = np.zeros((len(X), 2))
@@ -382,7 +381,6 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
                                (std_den / den) ** 2 -
                                2 * std_num ** 2 / (num * den))) ** 0.5
             # nb: cov(a, a+b) = var(a) when a and b are independent
-            std_p[den == 0] = 0  # not sure what is best?
 
             return p, std_p
 
