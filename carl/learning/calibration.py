@@ -227,6 +227,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
         for clf, calibrator in zip(self.classifiers_, self.calibrators_):
             if not return_std:
                 p[:, 1] += calibrator.predict(clf.predict_proba(X)[:, 1])
+
             else:
                 p_, std_ = calibrator.predict(clf.predict_proba(X)[:, 1],
                                               return_std=True)
@@ -235,7 +236,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
 
         p[:, 1] /= len(self.classifiers_)
         p[:, 0] = 1. - p[:, 1]
-        std = (1. / len(self. classifiers_) ** 2 * std) ** 0.5
+        std = (1. / len(self. classifiers_) ** 2 * std) ** 0.5   # assume independence? ok for cv==2
 
         if not return_std:
             return p
