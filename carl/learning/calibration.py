@@ -218,15 +218,30 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
         * `probas` [array, shape=(n_samples, n_classes)]:
             The predicted probabilities.
         """
+        if return_std and (self.method != "histogram" or
+                           not isinstance(self.method, HistogramCalibrator)):
+            raise ValueError
+
         p = np.zeros((len(X), 2))
+        std = np.zeros(len(X))
 
         for clf, calibrator in zip(self.classifiers_, self.calibrators_):
-            p[:, 1] += calibrator.predict(clf.predict_proba(X)[:, 1])
+            if not return_std:
+                p[:, 1] += calibrator.predict(clf.predict_proba(X)[:, 1])
+            else:
+                p_, std_ = calibrator.predict(clf.predict_proba(X)[:, 1],
+                                              return_std=True)
+                p[:, 1] += p_
+                std += std_ ** 2
 
         p[:, 1] /= len(self.classifiers_)
         p[:, 0] = 1. - p[:, 1]
+        std = (1. / len(self. classifiers_) ** 2 * std) ** 0.5
 
-        return p
+        if not return_std:
+            return p
+        else:
+            return p, std
 
     def _clone(self):
         estimator = clone(self, original=True)
@@ -363,8 +378,8 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
 
             std_num = std1
             std_den = (std0 ** 2 + std1 ** 2) ** 0.5
-            std_p = (num / den * ((std_num / num) ** 2 +
-                                  (std_den / den) ** 2)) ** 0.5
+            std_p = (p ** 2 * ((std_num / num) ** 2 +
+                               (std_den / den) ** 2)) ** 0.5
             std_p[den == 0] = 0  # not sure what is best?
 
             return p, std_p

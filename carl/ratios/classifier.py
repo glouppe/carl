@@ -132,7 +132,7 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
 
         return self
 
-    def predict(self, X, log=False, **kwargs):
+    def predict(self, X, log=False, return_std=False, **kwargs):
         """Predict the density ratio `r(x_i)` for all `x_i` in `X`.
 
         Parameters
@@ -149,15 +149,35 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
             The predicted ratio `r(X)`.
         """
         if self.identity_:
-            if log:
-                return np.zeros(len(X))
+            if not return_std:
+                if log:
+                    return np.zeros(len(X))
+                else:
+                    return np.ones(len(X))
             else:
-                return np.ones(len(X))
+                if log:
+                    return np.zeros(len(X)), np.zeros(len(X))
+                else:
+                    return np.ones(len(X)), np.zeros(len(X))
 
         else:
-            p = self.classifier_.predict_proba(X)
+            if not return_std:
+                p = self.classifier_.predict_proba(X)
 
-            if log:
-                return np.log(p[:, 0]) - np.log(p[:, 1])
+                if log:
+                    return np.log(p[:, 0]) - np.log(p[:, 1])
+                else:
+                    return np.divide(p[:, 0], p[:, 1])
+
             else:
-                return np.divide(p[:, 0], p[:, 1])
+                p, std = self.classifier_.predict_proba(X, return_std=True)
+
+                r = np.divide(p[:, 0], p[:, 1])
+                s = (r ** 2 * ((s / p[:, 0]) ** 2 +
+                               (s / p[:, 1]) ** 2)) ** 0.5
+
+                if not log:
+                    return r, s
+
+                else:
+                    return np.log(p[:, 0]) - np.log(p[:, 1]), s / r
