@@ -9,6 +9,7 @@ from numpy.testing import assert_array_almost_equal
 from numpy.testing import assert_almost_equal
 from sklearn.utils import check_random_state
 
+from carl.distributions import Normal
 from carl.distributions import Histogram
 
 
@@ -99,3 +100,18 @@ def test_histogram_std():
     X = np.array([[0.5]])
     p, std = h.pdf(X, return_std=True)
     assert std[0] == 0.0
+
+    # check that estimates are not too far off
+    h = Histogram(bins=10, range=[(-2, 2)])
+    p = Normal(mu=0)
+
+    pdfs, stds = [], []
+    for i in range(1000):
+        X = p.rvs(100, random_state=i)
+        h.fit(X)
+        pdf, std = h.pdf([[0.]], return_std=True)
+
+        pdfs.append(pdf[0])
+        stds.append(std[0])
+
+    assert np.abs(np.mean(stds) - np.std(pdfs)) < 0.01
