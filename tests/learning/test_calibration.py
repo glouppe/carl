@@ -79,7 +79,7 @@ def test_calibration():
         yield check_calibration, method
 
 
-def test_calibration_std():
+def test_calibration_histogram_std():
     p0 = Normal(mu=0.1, sigma=0.3)
     probas0 = p0.rvs(10000)
     probas0 = probas0[(probas0[:, 0] >= 0.0) & (probas0[:, 0] <= 1.0)]
@@ -98,5 +98,29 @@ def test_calibration_std():
     p, std = h.predict(xs.ravel(), return_std=True)
 
     assert std[50] > std[0]  # uncertainty should be higher near the boundary
-    assert np.abs(std[0] - std[-1]) < 10e-5  # uncertainty should be similar
-                                             # at those values
+    assert np.abs(std[0] - std[-1]) < 10e-5  # uncertainties should be similar
+
+
+def test_calibration_clf_std():
+    p0 = Normal(mu=0.1, sigma=0.3)
+    probas0 = p0.rvs(10000)
+    probas0 = probas0[(probas0[:, 0] >= 0.0) & (probas0[:, 0] <= 1.0)]
+    p1 = Normal(mu=0.9, sigma=0.3)
+    probas1 = p1.rvs(10000)
+    probas1 = probas1[(probas1[:, 0] >= 0.0) & (probas1[:, 0] <= 1.0)]
+
+    X = np.vstack([probas0, probas1])
+    y = np.zeros(len(X))
+    y[len(probas0):] = 1
+
+    from sklearn.ensemble import ExtraTreesClassifier
+    clf = CalibratedClassifierCV(ExtraTreesClassifier(max_leaf_nodes=5,
+                                                      n_estimators=100),
+                                 method="histogram", cv=3)
+    clf.fit(X, y)
+
+    xs = np.linspace(0, 1, 101).reshape(-1, 1)
+    p, std = clf.predict_proba(xs, return_std=True)
+
+    assert std[50] > std[0]  # uncertainty should be higher near the boundary
+    assert np.abs(std[0] - std[-1]) < 10e-5  # uncertainties should be similar
