@@ -98,7 +98,7 @@ def test_calibration_histogram_std():
     p, std = h.predict(xs.ravel(), return_std=True)
 
     assert std[50] > std[0]  # uncertainty should be higher near the boundary
-    assert np.abs(std[0] - std[-1]) < 10e-5  # uncertainties should be similar
+    assert np.abs(std[0] - std[-1]) < 10e-4  # uncertainties should be similar
 
 
 def test_calibration_clf_std():
@@ -123,4 +123,4 @@ def test_calibration_clf_std():
     p, std = clf.predict_proba(xs, return_std=True)
 
     assert std[50] > std[0]  # uncertainty should be higher near the boundary
-    assert np.abs(std[0] - std[-1]) < 10e-5  # uncertainties should be similar
+    assert np.abs(std[0] - std[-1]) < 10e-4  # uncertainties should be similar
