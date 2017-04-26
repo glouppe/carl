@@ -146,7 +146,7 @@ class Histogram(DistributionMixin):
 
         # Histogram and bin uncertainties
         h = counts / counts.sum() / volumes
-        errors = np.sqrt(counts) / counts.sum()  # Poisson errors
+        errors = np.sqrt(counts) / counts.sum() / volumes  # Poisson errors
 
         # Add empty bins for out of bound samples
         for j in range(X.shape[1]):

@@ -89,8 +89,8 @@ def test_histogram_std():
     h = Histogram(bins=5, range=[(0, 1)])
     h.fit(X)
     p, std = h.pdf(X, return_std=True)
-    assert std[0] == 5 ** 0.5 / 6
-    assert std[-1] == 1 ** 0.5 / 6
+    assert np.abs(std[0] - 5 ** 0.5 / 6 / 0.2) < 10e-5
+    assert np.abs(std[-1] - 1 ** 0.5 / 6 / 0.2) < 10e-5
 
     nll, std_nll = h.nll(X, return_std=True)
     assert std_nll[0] == std[0] / p[0]
