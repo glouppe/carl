@@ -33,7 +33,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, base_estimator, method="histogram", bins="auto",
-                 interpolation=None, variable_width=False, cv=1):
+                 range=None, interpolation=None, variable_width=False, cv=1):
         """Constructor.
 
         Parameters
@@ -50,6 +50,10 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
 
         * `bins` [int, default="auto"]:
             The number of bins, if `method` is `"histogram"`.
+
+        * `range` [(lower, upper), optional]:
+            The lower and upper bounds. If `None`, bounds are automatically
+            inferred from the data. Used only if `method` is `"histogram"`.
 
         * `interpolation` [string, optional]
             Specifies the kind of interpolation between bins as a string
@@ -75,6 +79,7 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
         self.base_estimator = base_estimator
         self.method = method
         self.bins = bins
+        self.range = range
         self.interpolation = interpolation
         self.variable_width = variable_width
         self.cv = cv
@@ -109,7 +114,8 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
         # Calibrator
         if self.method == "histogram":
             base_calibrator = HistogramCalibrator(
-                bins=self.bins, interpolation=self.interpolation,
+                bins=self.bins, range=self.range,
+                interpolation=self.interpolation,
                 variable_width=self.variable_width)
         elif self.method == "kde":
             base_calibrator = KernelDensityCalibrator()
@@ -326,6 +332,7 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
             t_min = max(0, min(np.min(t0), np.min(t1)) - self.eps)
             t_max = min(1, max(np.max(t0), np.max(t1)) + self.eps)
             range = [(t_min, t_max)]
+
         # Fit
         self.calibrator0 = Histogram(bins=bins, range=range,
                                      interpolation=self.interpolation,
