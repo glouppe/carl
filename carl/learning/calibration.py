@@ -242,7 +242,8 @@ class CalibratedClassifierCV(BaseEstimator, ClassifierMixin):
 
         p[:, 1] /= len(self.classifiers_)
         p[:, 0] = 1. - p[:, 1]
-        std = (1. / len(self. classifiers_) ** 2 * std) ** 0.5   # assume independence? ok for cv==2
+        std = (1. / len(self.classifiers_) ** 2 * std) ** 0.5
+        # assume independence? ok for cv==2
 
         if not return_std:
             return p
