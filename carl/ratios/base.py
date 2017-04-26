@@ -101,7 +101,7 @@ class DensityRatioMixin:
         if not return_std:
             return -np.sum(ratios[mask])
         else:
-            return -np.sum(ratios[mask]), (std ** 2).sum() ** 0.5
+            return -np.sum(ratios[mask]), (std[mask] ** 2).sum() ** 0.5
 
     def score(self, X, y, finite_only=True, **kwargs):
         """Negative MSE between predicted and known ratios.

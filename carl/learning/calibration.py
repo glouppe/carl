@@ -383,6 +383,8 @@ class HistogramCalibrator(BaseEstimator, RegressorMixin):
                                2 * std_num ** 2 / (num * den))) ** 0.5
             # nb: cov(a, a+b) = var(a) when a and b are independent
 
+            std_p[~np.isfinite(std_p)] = 0
+
             return p, std_p
 
 

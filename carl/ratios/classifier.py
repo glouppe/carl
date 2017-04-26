@@ -170,16 +170,22 @@ class ClassifierRatio(BaseEstimator, DensityRatioMixin):
                     return np.divide(p[:, 0], p[:, 1])
 
             else:
-                p, std = self.classifier_.predict_proba(X, return_std=True)
+                p, std_p = self.classifier_.predict_proba(X, return_std=True)
 
                 r = np.divide(p[:, 0], p[:, 1])
-                s = (r ** 2 * ((std / p[:, 0]) ** 2 +
-                               (std / p[:, 1]) ** 2 -
-                               2 * (-std ** 2) / (p[:, 0] * p[:, 1]))) ** 0.5
+                std_r = (r ** 2 * ((std_p / p[:, 0]) ** 2 +
+                                   (std_p / p[:, 1]) ** 2 -
+                                   2 * (-std_p ** 2) / (p[:, 0] *
+                                                        p[:, 1]))) ** 0.5
                 # nb: cov(p, 1-p) = -var(p) = -std^2(p)
 
+                std_r[~np.isfinite(std_r)] = 0
+
                 if not log:
-                    return r, s
+                    return r, std_r
 
                 else:
-                    return np.log(p[:, 0]) - np.log(p[:, 1]), s / r
+                    std_r = std_r / r
+                    std_r[~np.isfinite(std_r)] = 0
+
+                    return np.log(p[:, 0]) - np.log(p[:, 1]), std_r

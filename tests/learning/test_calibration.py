@@ -11,6 +11,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.metrics import brier_score_loss
 
 from carl.learning import CalibratedClassifierCV
+from carl.learning.calibration import HistogramCalibrator
 
 
 def check_calibration(method):

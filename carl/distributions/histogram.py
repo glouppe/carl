@@ -74,7 +74,10 @@ class Histogram(DistributionMixin):
         if not return_std:
             return -np.log(p)
         else:
-            return -np.log(p), std / p
+            s = std / p
+            s[~np.isfinite(s)] = 0
+
+            return -np.log(p), s
 
 
     def rvs(self, n_samples, random_state=None, **kwargs):
